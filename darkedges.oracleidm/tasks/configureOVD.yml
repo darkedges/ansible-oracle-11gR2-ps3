@@ -1,0 +1,28 @@
+---
+
+- debug: msg="configuring OVD"
+
+- name: Stop the OVD Server Instance
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ idm_instance_home }}/bin/opmnctl stopall"
+
+- name: compose the OVD Configuration
+  sudo_user: "{{ oracle_user }}"
+  template:
+    src: "{{ idm.version }}/OVD/{{ item[0] }}"
+    dest: "{{ idm_instance_home }}/config/OVD/{{ item[1].component_name }}/"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_nested:
+     - [
+         "acls.os_xml",
+         "adapters.os_xml",
+         "listeners.os_xml",
+         "ruleset.os_xml",
+         "server.os_xml"
+       ]
+     - ovd_components
+
+- name: Start the OVD Server Instance
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ idm_instance_home }}/bin/opmnctl startall"

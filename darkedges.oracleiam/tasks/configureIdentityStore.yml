@@ -1,0 +1,35 @@
+---
+      
+- name: Check if Identity Store has been configured.
+  stat: path={{ identitystore_configured }}
+  register: st
+
+- name: Assures /tmp/idmconfigtooldir exists
+  file: path="/tmp/idmconfigtool" state=directory
+  when: not st.stat.exists 
+
+- name: compose the IDM Config Tool settings
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'idmconfigtool/idstore.props.j2', dest: '/tmp/idmconfigtool/idstore.props' }
+     - { src: 'idmconfigtool/oim.props.j2', dest: '/tmp/idmconfigtool/oim.props' }
+     - { src: 'idmconfigtool/oam.props.j2', dest: '/tmp/idmconfigtool/oam.props' }
+  when: not st.stat.exists  
+  
+- name: idmConfigTool
+  become_user: "{{ oracle_user }}"
+  command: "{{ iam_home }}/idmtools/bin/idmConfigTool.sh {{ item.option }} {{item.mode }} input_file={{ item.file }}"
+  with_items:
+     - { option: '-preConfigIDStore', mode: '', file: '/tmp/idmconfigtool/idstore.props' }
+     - { option: '-prepareIDStore', mode: 'mode=WLS', file: '/tmp/idmconfigtool/idstore.props' }
+     - { option: '-prepareIDStore', mode: 'mode=OAM', file: '/tmp/idmconfigtool/idstore.props' }
+     - { option: '-prepareIDStore', mode: 'mode=OIM', file: '/tmp/idmconfigtool/idstore.props' }
+  environment:
+     MW_HOME: "{{ fmw_home }}"
+     ORACLE_HOME: "{{ iam_home }}"
+     JAVA_HOME: "{{ jdk_home }}"
+  when: not st.stat.exists
+
+- name: touch '{{ identitystore_configured }}'
+  file: path={{ identitystore_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not st.stat.exists

@@ -1,0 +1,116 @@
+---
+
+- debug: msg="Installing Oracle Database on Solaris"
+
+- name: create the oracle installation path
+  file:
+    path: "{{ oracle_path }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: 0755
+    recurse: yes
+    state: directory
+
+- name: set oracle user environment
+  lineinfile: dest=/home/{{ oracle_user }}/.profile 
+              state=present
+              create=yes
+              line="{{ item }}"
+  with_items:
+    - "export ORACLE_BASE={{ ora_user_env.ORACLE_BASE }}"
+    - "export ORACLE_SID={{ ora_user_env.ORACLE_SID }}"
+    - "export ORACLE_HOME={{ ora_user_env.ORACLE_HOME }}"
+    - "export PATH=$PATH:$ORACLE_HOME/bin"
+
+- name: set System Parameter
+  lineinfile: dest=/etc/system
+              state=present
+              line="set noexec_user_stack=1"
+
+- name: update project commands
+  command: "{{ item.cmd }}"
+  ignore_errors: "{{ item.ignore }}"
+  with_items:
+    - cmd: projadd -U oracle -K "project.max-shm-memory=(priv,2g,deny)" user.oracle
+      ignore: yes
+    - cmd: projmod -sK "project.max-sem-nsems=(priv,512,deny)" user.oracle
+      ignore: yes
+    - cmd: projmod -sK "project.max-sem-ids=(priv,128,deny)" user.oracle
+      ignore: yes
+    - cmd: projmod -sK "project.max-shm-ids=(priv,128,deny)" user.oracle
+      ignore: yes
+
+#
+# install oracle
+#
+
+- name: check if oracle has already been installed
+  stat: path=/etc/oratab
+  register: oracle_installed
+
+- name: compose the oracle automated installer settings
+  template:
+    src: db_installSoftwareOnly.rsp.j2
+    dest: "/tmp/db_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: compose the oracle automated installer settings
+  template:
+    src: db_installSoftwareOnly.rsp.j2
+    dest: "/tmp/db_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: unarchive Oracle Database installer
+  unarchive: src="{{ item.src }}"
+             dest="{{ oracle_tmp }}"
+             creates="{{ item.creates }}"
+  with_items:
+    - "{{ oracle_db_archives }}"
+
+- name: install oracle
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command: "{{ oracle_tmp }}/database/runInstaller -silent -force -ignoreSysPrereqs -ignorePrereq -waitforcompletion -responseFile /tmp/db_install.rsp"
+  ignore_errors: yes
+  when: not oracle_installed.stat.exists  
+
+- name: general oracle post-installation
+  command: "{{ oracle_inventory }}/orainstRoot.sh"
+  when: not oracle_installed.stat.exists
+    
+- name: db-specific oracle post-installation
+  command: "{{ ora_user_env.ORACLE_HOME }}/root.sh"
+  when: not oracle_installed.stat.exists
+    
+- name: compose the oracle netca installer settings
+  template:
+    src: netca.rsp.j2
+    dest: "/tmp/netca.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    
+- name: configure netca
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command: "{{ oracle_db_basename }}/bin/netca /silent /responsefile /tmp/netca.rsp"
+
+- name: compose the oracle dbca installer settings
+  template:
+    src: dbca.rsp.j2
+    dest: "/tmp/dbca.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    
+- name: configure dbca
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command: "{{ oracle_db_basename }}/bin/dbca -silent -responseFile /tmp/dbca.rsp"
+    
+- name: set oracle to autostart
+  lineinfile:
+    dest: /var/opt/oracle/oratab
+    state: present
+    regexp: "^{{ oracle_db_name }}"
+    line: "{{ oracle_db_name }}:{{ ora_user_env.ORACLE_HOME }}:Y"

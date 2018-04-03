@@ -1,0 +1,8 @@
+---
+
+oracle_group: oinstall
+oracle_dba_group: dba
+oracle_user: oracle
+oracle_pass: $1$salt$6hY7SFGTovD5BRJ.4zYAd1
+
+fmw_path: /u01/app/oracle/fmw

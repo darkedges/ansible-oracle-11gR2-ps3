@@ -1,0 +1,6 @@
+#!/bin/bash
+echo Dropping OPSS
+/u01/app/oracle/rcu/bin/rcu -silent -dropRepository -databaseType ORACLE -dbUser sys -connectString localhost:1521:orcl.darkedges.local -dbRole SYSDBA -useSamePasswordForAllSchemaUsers -schemaPrefix DEV -component OPSS -f < passwordfile
+
+echo Creating OPSS
+/u01/app/oracle/rcu/bin/rcu -silent -createRepository -databaseType ORACLE -dbUser sys -connectString localhost:1521:orcl.darkedges.local -dbRole SYSDBA -useSamePasswordForAllSchemaUsers -schemaPrefix DEV -component OPSS -f < passwordfile

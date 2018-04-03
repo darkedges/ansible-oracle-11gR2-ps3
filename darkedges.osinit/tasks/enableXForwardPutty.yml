@@ -1,0 +1,11 @@
+---
+
+- name: update sshd
+  lineinfile: dest=/etc/ssh/sshd_config regexp="^#AddressFamily" line="AddressFamily inet" 
+  tags:
+    - tmp
+  
+- name: restart sshd
+  service: name=sshd state=restarted
+  tags:
+    - tmp

@@ -1,0 +1,12 @@
+---
+- name: Configure iptables
+  iptables: chain=INPUT destination_port="{{ item }}" jump=ACCEPT protocol=tcp state=present
+  with_items:
+    - 7001
+    - 14000
+    - 14100
+    - 80
+    - 443
+
+- name: Ensure iptables is running
+  service: name=nodemanager state=started

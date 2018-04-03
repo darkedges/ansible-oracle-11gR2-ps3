@@ -1,0 +1,18 @@
+---
+
+- hosts: all
+  sudo: true
+  roles:
+   #- { role: darkedges.osinit }
+   #- { role: darkedges.oracledb }
+   #- { role: darkedges.oraclercu }
+   #- { role: darkedges.oraclejdk }
+   #- { role: darkedges.oracleoud }
+   #- { role: darkedges.oraclewls }
+   #- { role: darkedges.oracleiam }
+   - { role: darkedges.oraclewt }
+   - { role: darkedges.oraclewg }
+   #- { role: versent.axwayapigw }
+  handlers:
+    - name: run ldconfig
+      action: command /sbin/ldconfig

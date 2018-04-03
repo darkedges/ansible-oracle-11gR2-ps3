@@ -1,0 +1,67 @@
+--- 
+- name: check if JDK has been deployed
+  stat: path="{{ jdk_home }}"
+  register: st
+
+- name: install x86 oracle dependencies
+  package: name="{{ item }}"
+           state=present
+  with_items:
+    - "{{ jdk_package_dependencies }}"
+  when: (not st.stat.exists) and (not ansible_distribution == "Solaris")
+
+- name: "create {{ jdk_base }} directory"
+  file: dest="{{ jdk_base }}"
+        state=directory 
+        owner={{ oracle_user }} 
+        group={{ oracle_group }}
+  when: not st.stat.exists
+  
+- name: unzip installer  
+  become_user: "{{ oracle_user }}"
+  unarchive: src={{ item }} 
+             dest={{ fmw_home }}  
+             copy=no
+  with_items:
+     - "{{ jdk_download_folder }}/{{ oracle_jdk_installer }}"
+  when: ( not st.stat.exists ) and ( oracle_jdk_installer.find('.zip') != -1 )
+
+- name: execute installer
+  shell: '{{ jdk_download_folder }}/{{ item.installer }} >/dev/null < <(echo y) >/dev/null < <(echo y)'
+  args:
+    chdir: "{{ jdk_base }}"
+    executable: /bin/bash
+    creates: "{{ item.creates }}"
+  with_items:
+    - "{{ oracle_jdk_installers }}"
+  when: ( not st.stat.exists ) and ( ( item.installer.find('.zip') == -1 )  )
+
+- name: rename jdk folder
+  command: "mv {{ jdk_base }}/{{ jdk_archive_dir }} {{ jdk_home }}"
+  when: ( not st.stat.exists )
+
+- name: rename jdk folder
+  file: dest="{{ jdk_home }}"
+        owner="{{ oracle_user }}" 
+        group="{{ oracle_group }}" 
+        mode=0755 
+        recurse=yes
+
+- name: configure correct environment file
+  set_fact:
+    environment_file: .profile
+  when: ansible_distribution == "Solaris" 
+
+- name: configure correct environment file
+  set_fact:
+    environment_file: .bashrc
+  when: not ansible_distribution == "Solaris" 
+
+- name: set oracle user environment
+  lineinfile: dest="/home/{{ oracle_user }}/{{ environment_file }}"
+              state=present 
+              line="{{ item }}"
+              create=yes
+  with_items:
+    - "export JAVA_HOME={{ jdk_home }}"
+  when: not st.stat.exists

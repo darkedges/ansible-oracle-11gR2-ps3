@@ -1,0 +1,32 @@
+---
+#
+# create the oracle user and groups
+#
+
+- name: create initial groups for the oracle user
+  group: name={{ item }} state=present
+  with_items:
+    - "{{ oracle_group }}"
+    - "{{ oracle_dba_group }}"
+
+
+- name: configure correct home directory file - solaris
+  set_fact:
+    oracle_user_home_dir: "/export/home/{{ oracle_user }}"
+  when: ansible_distribution == "Solaris" 
+
+- name: configure correct home directory file - linux
+  set_fact:
+    oracle_user_home_dir: "/home/{{ oracle_user }}"
+  when: not ansible_distribution == "Solaris" 
+
+- name: create oracle user
+  user:
+    name: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    groups: "{{ oracle_dba_group }}"
+    home: "{{ oracle_user_home_dir }}"
+    shell: /bin/bash
+    uid: 37289
+    password: "{{ oracle_pass }}"
+    append: yes

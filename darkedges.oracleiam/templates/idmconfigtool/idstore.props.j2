@@ -1,0 +1,36 @@
+IDSTORE_HOST: {{ idstore_host }}
+IDSTORE_PORT: {{ idstore_listener_port }}
+IDSTORE_BINDDN: {{ idstore_admin_dn }}
+IDSTORE_PASSWD: {{ idstore_admin_password }}
+IDSTORE_USERNAMEATTRIBUTE: uid
+IDSTORE_LOGINATTRIBUTE: uid
+IDSTORE_USERSEARCHBASE: {{ idstore_searchbase_user }}
+IDSTORE_GROUPSEARCHBASE: {{ idstore_searchbase_groups }}
+IDSTORE_SEARCHBASE: {{ idstore_searchbase }}
+IDSTORE_SYSTEMIDBASE: cn=systemids,{{ idstore_searchbase }}
+
+##########################
+#preconfigOAMPropertyFile
+##########################
+POLICYSTORE_SHARES_IDSTORE: true
+OAM11G_IDSTORE_ROLE_SECURITY_ADMIN:OAMAdministrators
+IDSTORE_OAMSOFTWAREUSER:{{ idstore_oam_ldap_uid }}
+IDSTORE_PWD_OAMSOFTWAREUSER: {{ idstore_oam_ldap_password }}
+IDSTORE_OAMADMINUSER:{{ idstore_oam_admin_uid }}
+IDSTORE_PWD_OAMADMINUSER:{{ idstore_oam_admin_password }}
+
+##########################
+#preconfigOIMPropertyFile
+##########################
+IDSTORE_OIMADMINUSER: {{ idstore_oim_ldap_uid }}
+IDSTORE_PWD_OIMADMINUSER: {{ idstore_oim_ldap_password }}
+IDSTORE_PWD_XELSYSADMINUSER: {{ idstore_oim_admin_password }}
+IDSTORE_OIMADMINGROUP: OIMAdministrators
+IDSTORE_PWD_OAMOBLIXUSER: {{ idstore_oam_oblixuser_password }}
+
+##########################
+#preconfigWLSPropertyFile
+##########################
+IDSTORE_WLSADMINUSER: {{ idstore_wls_admin_uid }}
+IDSTORE_PWD_WEBLOGICADMINUSER: {{ idstore_wls_admin_password }}
+IDSTORE_WLSADMINGROUP: wlsadmingroup

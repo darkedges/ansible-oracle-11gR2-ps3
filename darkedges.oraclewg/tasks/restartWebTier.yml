@@ -1,0 +1,15 @@
+---
+
+- name: Stop WebTier
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ wt_instance_home }}/bin/opmnctl stopall"
+
+- name: Wait for the OHS service to stop
+  wait_for: port="{{ ohs_vh_auth_port }}" delay=10 state=drained
+  
+- name: Start WebTier
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ wt_instance_home }}/bin/opmnctl startall"
+
+- name: Wait for the OHS service to start
+  wait_for: port="{{ ohs_vh_auth_port }}" delay=10 

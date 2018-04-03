@@ -1,0 +1,89 @@
+---
+# defaults file for darkedges_oracleoud
+download_folder: /install
+oracle_user: oracle
+oracle_group: oinstall
+
+fmw_home: /u01/app/oracle/fmw
+iam_home: "{{ fmw_home }}/Oracle_IAM1"
+soa_home: "{{ fmw_home }}/Oracle_SOA1"
+jdk_home: "{{ fmw_home }}/jdk7"
+wl_home: "{{ fmw_home }}/wlserver_10.3"
+
+domain: prov_domain
+domain_location: /u01/app/oracle/shared/domains/{{domain}}
+
+identitystore_configured: "{{ fmw_home }}/idtsore_txt"
+oim_configured: "{{ domain_location }}/oim_configured"
+oim_designconsole_configured: "{{ domain_location }}/oim_designconsole_configured"
+oim_postldap_configured: "{{ domain_location }}/oim_postldap_configured"
+oim_integration_configured: "{{ domain_location }}/oim_integration_configured"
+oim_complete_configured: "{{ domain_location }}/oim_complete_configured"
+
+idstore_host: "{{ hostvars['data'].ansible_fqdn }}"
+idstore_listener_port: 1389
+idstore_admin_dn: cn=Directory Manager
+idstore_admin_password: Passw0rd
+idstore_searchbase: dc=example,dc=com
+idstore_searchbase_user: cn=users,{{ idstore_searchbase  }}
+idstore_searchbase_groups: cn=groups,{{ idstore_searchbase  }}
+idstore_searchbase_reservation: cn=reserve,{{ idstore_searchbase  }}
+idstore_searchbase_systemids: cn=systemids,{{idstore_searchbase}}
+idstore_oam_ldap_uid: oamLDAP
+idstore_oam_ldap_password: Passw0rd
+idstore_oam_admin_uid: oamadmin
+idstore_oam_admin_password: Passw0rd
+idstore_oim_ldap_uid: oimLDAP
+idstore_oim_ldap_dn: uid={{idstore_oim_ldap_uid}},{{idstore_searchbase_systemids}}
+idstore_oim_ldap_password: Passw0rd
+idstore_oim_admin_password: Passw0rd
+idstore_oam_oblixuser_password: Passw0rd
+idstore_wls_admin_uid: weblogic
+idstore_wls_admin_password: Passw0rd
+
+oud_instance: asinst_1
+
+db_host: "{{ hostvars['data'].ansible_fqdn }}"
+db_port: 1521
+db_service: orcl.vagrant.vm 
+
+nodemanager_port: 5556
+
+oam_cookie_domain: "{{ hostvars['application'].ansible_domain }}"
+oam_proxy_host: "{{ hostvars['application'].ansible_fqdn }}"
+oam_host: "{{ hostvars['application'].ansible_hostname }}{{oam_cookie_domain}}"
+oam_proxy_port: 5575
+wls_host: "{{ hostvars['application'].ansible_fqdn }}"
+wls_host_port: 7001
+db_url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST={{db_host}})(PORT={{db_port}})))(CONNECT_DATA=(SERVICE_NAME={{db_service}})))
+db_url_2: jdbc:oracle:thin:@{{db_host}}:{{db_port}}/{{db_service}}
+db_url_3: "{{db_host}}:{{db_port}}:{{db_service}}"
+db_prefix: DEV
+oim_wls_host: "{{ hostvars['application'].ansible_fqdn }}"
+oim_wls_port: 7001
+wls_domain_name: prov_domain
+wls_domain_directory: /u01/app/oracle/shared/domains/prov_domain
+sso_accessgate_password: Passw0rd
+sso_keystore_password: Passw0rd
+sso_global_password: Passw0rd
+idstore_directory_type: OUD
+
+db_mds_password: Passw0rd
+db_oim_password: Passw0rd
+db_opss_password: Passw0rd
+db_orasdpm_password: Passw0rd
+db_soainfra_password: Passw0rd
+
+soa_host: "{{ hostvars['application'].ansible_fqdn }}"
+soa_host_port: 8001
+
+oim_host_port: 14000
+oam_host_port: 14100
+
+oim_keystore_password: Passw0rd
+
+ohs_host: "{{ hostvars['application'].ansible_fqdn }}"
+ohs_host_port: 7777
+
+oam_oim_webgate_password: Passw0rd
+oam11g_idstore_role_security_admin: OAMAdministrators

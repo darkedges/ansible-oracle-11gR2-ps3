@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# based on http://ruleoftech.com/2013/weblogic-server-auto-restart-with-node-manager-as-linux-service
+
+SERVICE_NAME=`/bin/basename $0`
+RETVAL=0
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+cd $DIR/wlst/
+{{ wl_home }}/common/bin/wlst.sh managedServers.py "$@"
+RETVAL=$?
+
+
+exit $RETVAL

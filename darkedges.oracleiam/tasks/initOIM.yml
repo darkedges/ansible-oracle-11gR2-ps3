@@ -1,0 +1,199 @@
+---
+
+- name: Check if nodemanager is running
+  become_user: "{{ oracle_user }}"
+  shell: "/home/oracle/bin/adminserver.sh status"
+  register: admingrep
+  
+- name: Check if the nodemanager is running
+  become_user: "{{ oracle_user }}"
+  shell: "/home/oracle/bin/nodemanager.sh status"
+  when: admingrep is defined and admingrep.stdout.find('adminserver.sh is stopped') != -1
+  register: nodemanagergrep
+  
+- name: Start the NodeManager
+  service: name=nodemanager state=restarted
+  when: nodemanagergrep is defined and nodemanagergrep.stdout.find('nodemanager.sh is stopped') != -1
+  
+- name: Wait for the NodeManager service to start
+  wait_for: port="{{ nodemanager_port }}" delay=10
+  when: nodemanagergrep is defined and  nodemanagergrep.stdout.find('nodemanager.sh is stopped') != -1
+  
+- name: Start the AdminServer
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/adminserver.sh start"
+  when: admingrep is defined and admingrep.stdout.find('adminserver.sh is stopped') != -1
+ 
+- name: Check if the SOA Server is running
+  become_user: "{{ oracle_user }}"
+  shell: "~{{ oracle_user }}/bin/managedservers.sh -c status -n soa_server1"
+  register: soagrep
+  
+- name: Start the SOA Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n soa_server1"
+  when: soagrep is defined and soagrep.stdout.find('Server soa_server1 is :\u001b[1;31mSHUTDOWN\u001b[0m') != -1  
+ 
+- name: Check if OIM has been configured.
+  stat: path={{ oim_configured }}
+  register: oimConfigured 
+ 
+- name: compose the IDM Config Tool settings
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'oim_configure.rsp.j2', dest: '/tmp/oim_configure.rsp' }
+  when: not oimConfigured.stat.exists
+  
+- name: Configure Oracle Identity Manager
+  become_user: "{{ oracle_user }}"
+  command: "{{iam_home}}/bin/config.sh -ignoreSysPrereqs -waitforcompletion -silent -response /tmp/oim_configure.rsp"
+  when: not oimConfigured.stat.exists
+  
+- name: touch '{{ oim_configured }}'
+  file: path={{ oim_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not oimConfigured.stat.exists
+  
+- name: Check if OIM Design Console has been configured.
+  stat: path={{ oim_designconsole_configured }}
+  register: oimDesignConsoleConfigured 
+ 
+- name: compose the IDM Design Console Config Tool settings
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'oim_designconsole_configure.rsp.j2', dest: '/tmp/oim_designconsole_configure.rsp' }
+  when: not oimDesignConsoleConfigured.stat.exists
+  
+- name: Configure Oracle Identity Manager Design Console
+  become_user: "{{ oracle_user }}"
+  command: "{{iam_home}}/bin/config.sh -ignoreSysPrereqs -waitforcompletion -silent -response /tmp/oim_designconsole_configure.rsp"
+  when: not oimDesignConsoleConfigured.stat.exists
+  
+- name: touch '{{ oim_designconsole_configured }}'
+  file: path={{ oim_designconsole_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not oimDesignConsoleConfigured.stat.exists
+
+- name: Configure Oracle Identity Manager WLFullClient
+  become_user: "{{ oracle_user }}"
+  command: "{{ jdk_home }}/bin/java -jar wljarbuilder.jar" 
+  args:
+    chdir: "{{ wl_home }}/server/lib"
+    creates: "{{ wl_home }}/server/lib/wlfullclient.jar"
+    
+- name: Check if the OIM Server is running
+  become_user: "{{ oracle_user }}"
+  shell: "~{{ oracle_user }}/bin/managedservers.sh -c status -n oim_server1"
+  register: oimgrep
+  
+- name: Start the OIM Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n oim_server1"
+  when: oimgrep is defined and oimgrep.stdout.find('Server oim_server1 is :\u001b[1;31mSHUTDOWN\u001b[0m') != -1  
+
+- name: Check if post OIM LDAP has been configured.
+  stat: path={{ oim_postldap_configured }}
+  register: oimPostLDAPConfigured 
+
+- name: compose OIM Post LDAP Configuration
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'ldap_config_util/ldapconfig.props.j2', dest: '{{iam_home}}/server/ldap_config_util/ldapconfig.props' }
+     - { src: 'oud/passwordfile.j2', dest: '/tmp/passwordfile' }
+  when: not oimPostLDAPConfigured.stat.exists
+
+- name: compose OIM Post LDAP Configuration
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'oud/changelog.j2', dest: '/tmp/oudchangelog' }
+     - { src: 'oud/passwordfile.j2', dest: '/tmp/passwordfile' }
+  delegate_to: data
+  when: not oimPostLDAPConfigured.stat.exists
+
+- name: configure OUD changelog permissions
+  become_user: "{{ oracle_user }}"
+  command: "{{ fmw_home }}/{{ oud_instance }}/OUD/bin/dsconfig -X -j /tmp/passwordfile -F /tmp/oudchangelog -n"
+  delegate_to: data
+  when: not oimPostLDAPConfigured.stat.exists
+  
+- name: Perform OIM Post LDAP Configuration
+  become_user: "{{ oracle_user }}"
+  command: "{{ iam_home }}/server/ldap_config_util/LDAPConfigPostSetup.sh {{iam_home}}/server/ldap_config_util {{ idstore_oim_ldap_password }} {{ idstore_oim_admin_password }}"  
+  args:
+    chdir: "{{ iam_home }}/server/ldap_config_util/"
+  environment:
+    MW_HOME: "{{ fmw_home }}"
+    JAVA_HOME: "{{ jdk_home }}"
+    WL_HOME: "{{ wl_home }}"
+    OIM_ORACLE_HOME: "{{ iam_home }}"
+    APP_SERVER: "weblogic"
+    DOMAIN_HOME: "{{ domain_location }}" 
+  when: not oimPostLDAPConfigured.stat.exists
+
+- name: touch '{{ oim_postldap_configured }}'
+  file: path={{ oim_postldap_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not oimPostLDAPConfigured.stat.exists  
+
+- name: Check if post OIM/OAM integration has been configured.
+  stat: path={{ oim_integration_configured }}
+  register: oimIntegrationConfigured 
+  
+- name: Perform OIM/OAM Integration
+  become_user: "{{ oracle_user }}"
+  command: "{{ iam_home }}/idmtools/bin/idmConfigTool.sh {{ item.option }} input_file={{ item.file }}"
+  with_items:
+    - { option: '-configOIM', file: '/tmp/idmconfigtool/oim.props' }
+  environment:
+     MW_HOME: "{{ fmw_home }}"
+     ORACLE_HOME: "{{ iam_home }}"
+     JAVA_HOME: "{{ jdk_home }}"
+  when: not oimIntegrationConfigured.stat.exists
+
+- name: compose OIM/OAM Integration WLST Configuration
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  with_items:
+     - { src: 'wlst/updateSecurityRealm.py.j2', dest: '/tmp/updateSecurityRealm.py' }
+  when: not oimIntegrationConfigured.stat.exists
+
+- name: Perform OIM/OAM WLST Configuration
+  become_user: "{{ oracle_user }}"
+  command: "{{ iam_home }}/common/bin/wlst.sh {{ item.file }}"
+  with_items:
+    - { file: '/tmp/updateSecurityRealm.py' }
+  when: not oimIntegrationConfigured.stat.exists
+  
+- name: touch '{{ oim_integration_configured }}'
+  file: path={{ oim_integration_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not oimIntegrationConfigured.stat.exists 
+  
+  
+- name: Check if post OIM LDAP has been configured.
+  stat: path={{ oim_complete_configured }}
+  register: oimCompleteConfigured
+  
+- name: Stop the OIM Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c stop -n oim_server1"
+  when: not oimCompleteConfigured.stat.exists
+  
+- name: Stop the SOA Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c stop -n soa_server1"
+  when: not oimCompleteConfigured.stat.exists
+
+- name: Restart the Admin Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/adminserver.sh restart"
+  when: not oimCompleteConfigured.stat.exists
+  
+- name: Start the SOA Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n soa_server1"
+  when: not oimCompleteConfigured.stat.exists
+  
+- name: start the OIM Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n oim_server1"
+  when: not oimCompleteConfigured.stat.exists
+  
+- name: touch '{{ oim_complete_configured }}'
+  file: path={{ oim_complete_configured }} state=touch owner={{ oracle_user }} group={{ oracle_group }} mode=0555
+  when: not oimCompleteConfigured.stat.exists 

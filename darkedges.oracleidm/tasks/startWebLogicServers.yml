@@ -1,0 +1,40 @@
+---
+
+- debug: msg="Starting servers"
+
+- name: Start the NodeManager
+  service: name=nodemanager state=restarted
+  register: nodemanagerstatus
+
+- name: Wait for the NodeManager service to start
+  wait_for:  port="{{ domain.nodemanager.port }}" delay=10
+  when: nodemanagerstatus.changed
+
+- name: Start the AdminServer
+  sudo_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/adminserver.sh start"
+
+- name: Wait for the AdminServer service to start
+  sudo: no
+  local_action: 
+    module: wait_for 
+      host="{{ idm.config.DOMAIN_HOST_NAME }}" 
+      port="{{ domain.http.port }}" 
+      delay=10
+
+- name: Start the ManagedServer
+  sudo_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/adminserver.sh start"
+
+- name: Start the Managed Server
+  sudo_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n {{ odsm_wls_instance }}"  
+  register: managedserversoutput 
+  
+- name: Wait for the Managed Server service to start
+  sudo: no
+  local_action: 
+    module: wait_for 
+      host="{{ idm.config.DOMAIN_HOST_NAME }}" 
+      port="{{ idm.odsm.ports.nonssl }}" 
+      delay=10

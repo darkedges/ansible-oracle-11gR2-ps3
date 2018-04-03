@@ -1,0 +1,14 @@
+---
+# defaults file for darkedges.oracleoud
+download_folder: /install/zips
+oracle_jdk_installer: jdk-7u79-linux-x64.tar.gz
+oracle_user: oracle
+oracle_group: oinstall
+
+jdk_archive_dir: jdk1.7.0_79
+fmw_home: /u01/app/oracle/fmw
+jdk_home: "{{ fmw_home }}/jdk7"
+
+jdk_package_dependencies:
+  - libselinux-python
+

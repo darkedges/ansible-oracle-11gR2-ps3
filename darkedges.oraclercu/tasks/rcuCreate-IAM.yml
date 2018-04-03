@@ -1,0 +1,12 @@
+--- 
+
+- name: compose the RCU settings
+  template:
+    src: IAMPasswordFile.txt.j2
+    dest: "/tmp/passwordFile.txt"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: IAM RCU Creation
+  become_user: "{{ oracle_user }}"
+  shell: '{{ rcu_home }}/bin/rcu -silent -createRepository -databaseType ORACLE -dbUser sys -connectString {{oracle_database_hostname}}:{{oracle_database_port}}:{{oracle_database_servicename}}  -dbRole SYSDBA -schemaPrefix DEV {{ oracle_database_rcu_components }} -f < /tmp/passwordFile.txt'

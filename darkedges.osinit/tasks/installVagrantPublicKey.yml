@@ -1,0 +1,8 @@
+---
+
+- name: append 'private_key' to 'authorized_keys' for user 'vagrant' / 'oracle'
+  authorized_key: user={{ item }} 
+                  key="{{ lookup('file', 'public_key') }}"
+  with_items: 
+    - vagrant
+    - oracle

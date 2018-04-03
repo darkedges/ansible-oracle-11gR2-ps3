@@ -1,0 +1,43 @@
+##########################
+#OIMconfigPropertyFile
+##########################
+LOGINURI: /${app.context}/adfAuthentication
+LOGOUTURI: /oamsso/logout.html
+AUTOLOGINURI: None
+ACCESS_SERVER_HOST: {{oam_proxy_host}}
+ACCESS_SERVER_PORT: {{oam_proxy_port}}
+ACCESS_GATE_ID: DCCWebgate
+COOKIE_DOMAIN: {{oam_cookie_domain}}
+COOKIE_EXPIRY_INTERVAL: 120
+OAM_TRANSFER_MODE: simple
+WEBGATE_TYPE: ohsWebgate11g 
+OAM_SERVER_VERSION: 11g
+OAM11G_WLS_ADMIN_HOST: {{oam_host}}
+OAM11G_WLS_ADMIN_PORT: {{ wls_host_port }}
+OAM11G_WLS_ADMIN_USER: {{ idstore_wls_admin_uid }}
+SSO_ENABLED_FLAG: true
+IDSTORE_HOST: {{ idstore_host }}
+IDSTORE_PORT: {{ idstore_listener_port }}
+IDSTORE_DIRECTORYTYPE: {{idstore_directory_type}}
+IDSTORE_ADMIN_USER: {{idstore_oim_ldap_dn}}
+IDSTORE_LOGINATTRIBUTE: uid
+IDSTORE_USERSEARCHBASE: {{ idstore_searchbase_user }}
+IDSTORE_GROUPSEARCHBASE: {{ idstore_searchbase_groups }}
+IDSTORE_WLSADMINUSER: {{ idstore_wls_admin_uid }}
+MDS_DB_URL: {{db_url}}
+MDS_DB_SCHEMA_USERNAME: {{db_prefix}}_MDS
+WLSHOST: {{oim_wls_host}}
+WLSPORT: {{oim_wls_port}}
+WLSADMIN: {{idstore_wls_admin_uid}}
+DOMAIN_NAME: {{wls_domain_name}}
+OIM_MANAGED_SERVER_NAME: oim_server2
+DOMAIN_LOCATION: {{wls_domain_directory}}
+
+SSO_ACCESS_GATE_PASSWORD: {{sso_accessgate_password}}
+SSO_KEYSTORE_JKS_PASSWORD: {{sso_keystore_password}}
+SSO_GLOBAL_PASSPHRASE: {{sso_global_password}}
+MDS_DB_SCHEMA_PASSWORD: {{db_mds_password}}
+IDSTORE_ADMIN_PASSWD: {{idstore_oim_ldap_password}}
+WLSPASSWD: {{idstore_wls_admin_password}}
+OAM11G_WLS_ADMIN_PASSWD: {{idstore_wls_admin_password}}
+IDSTORE_WLSADMINUSER_PWD: {{ idstore_wls_admin_password }}

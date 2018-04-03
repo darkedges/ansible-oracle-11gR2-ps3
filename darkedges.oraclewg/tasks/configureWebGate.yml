@@ -1,0 +1,24 @@
+---
+
+- name: start AdminServer
+  include: startAdminServer.yml 
+
+- name: Deploying WebGate
+  become_user: "{{ oracle_user }}"
+  command: "{{ wg_home }}/webgate/ohs/tools/deployWebGate/deployWebGateInstance.sh -w {{ wt_instance_home }}/config/OHS/ohs1/ -oh {{ wg_home }}" 
+  args:
+    chdir: "{{ wg_home }}/webgate/ohs/tools/deployWebGate"
+    creates: "{{ wt_instance_home }}/config/OHS/ohs1/webgate/config/oblog_config_wg.xml"
+
+- shell: cat {{ wt_instance_home }}/config/OHS/ohs1/httpd.conf
+  register: httpd_contents
+
+- name: Edit httpd.conf
+  become_user: "{{ oracle_user }}"
+  command: "{{ wg_home }}/webgate/ohs/tools/setup/InstallTools/EditHttpConf -w {{ wt_instance_home }}/config/OHS/ohs1/ -oh {{ wg_home }}" 
+  environment:
+    LD_LIBRARY_PATH: "{{ wt_home }}/lib"
+  args:
+    chdir: "{{ wg_home }}/webgate/ohs/tools/setup/InstallTools"
+  when: httpd_contents.stdout.find('config/OHS/ohs1/webgate.conf') == -1  
+  

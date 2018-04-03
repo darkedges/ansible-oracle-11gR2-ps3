@@ -1,0 +1,6 @@
+import os, sys
+
+execfile('/home/{{ oracle_user }}/bin/wlst/variables.py')
+connect(wls_uid,wls_password,'t3://'+wls_adminServer+':'+wls_adminServerPort);
+nmEnroll('{{ domain_home }}/{{ domain_name }}','{{ fmw_home }}/wlserver_10.3/common/nodemanager');
+exit();

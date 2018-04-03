@@ -1,0 +1,24 @@
+---
+
+- name: install x86 oracle dependencies
+  yum: name={{ item }} state=present
+  with_items:
+    - binutils
+    - compat-libcap1
+    - compat-libstdc++-33
+    - compat-libstdc++-33.i686
+    - libgcc
+    - libstdc++
+    - libstdc++.i686
+    - libstdc++-devel
+    - sysstat
+    - gcc
+    - gcc-c++
+    - make
+    - glibc
+    - glibc.i686
+    - glibc-devel
+    - glibc-devel.i686
+    - libaio
+    - libaio-devel 
+    - redhat-lsb-core

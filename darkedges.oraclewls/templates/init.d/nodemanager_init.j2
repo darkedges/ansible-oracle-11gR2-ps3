@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# {{ ansible_managed }}
+
+# oracle: Start/Stop Oracle Database 11g R2 on CentOS 6
+#
+# chkconfig: 345 95 5
+# description: Oracle 11g R2 NodeManager
+#
+# processname: nodemanager
+#
+# Source: http://janhellevik.com/?p=923
+
+. /etc/rc.d/init.d/functions
+
+ORACLE_USER={{ oracle_user }}
+
+case "$1" in
+'start')
+   echo -n $"Starting WebLogic NodeManager:"
+   su - $ORACLE_USER -c "/home/{{ oracle_user }}/bin/nodemanager.sh start"
+   ;;
+'stop')
+   echo -n $"Stopping WebLogic NodeManager:"
+   su - $ORACLE_USER -c "/home/{{ oracle_user }}/bin/nodemanager.sh stop"
+   ;;
+'restart')
+   $0 stop
+   $0 start
+   ;;
+'status')
+   su - $ORACLE_USER -c "/home/{{ oracle_user }}/bin/nodemanager.sh status"
+   ;;
+*)
+   echo "Usage: $0 [start|stop|status]"
+   exit 1
+esac
+
+exit 0

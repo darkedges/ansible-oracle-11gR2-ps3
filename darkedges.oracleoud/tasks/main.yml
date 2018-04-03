@@ -1,0 +1,60 @@
+--- 
+# - name: check if OUD has been deployed
+  stat: path={{ oud_home }}
+  register: st
+
+- name: create FMW directory
+  become_user: "{{ oracle_user }}"
+  file: dest={{ fmw_home }} state=directory
+  when: not st.stat.exists
+  
+- name: compose the oracle automated installer settings
+  template:
+    src: oud_installSoftwareOnly.rsp.j2
+    dest: "/tmp/oud_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: install OUD
+  become_user: "{{ oracle_user }}"
+  command: "{{ download_folder }}/oud/Disk1/runInstaller -silent -force -ignoreSysPrereqs -waitforcompletion -jreLoc {{ jdk_home }} -responseFile /tmp/oud_install.rsp"
+  ignore_errors: yes
+  when: not st.stat.exists  
+
+- name: check if instance exists
+  stat: path="{{ instance_home }}"
+  register: st
+  
+- name: compose the root user password file
+  template:
+    src: rootuserpasswordfile.j2
+    dest: "/tmp/rootuserpasswordfile"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: configure OUD
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command:  '{{ oud_home }}/oud-setup --cli --baseDN {{ oud_basedn }} --addBaseEntry --adminConnectorPort {{ oud_adminport }} --ldapPort {{ oud_ldapport }} --rootUserDN "{{ oud_rootUserDN }}" --rootUserPasswordFile /tmp/rootuserpasswordfile --doNotStart --enableStartTLS --generateSelfSignedCertificate --hostname {{ oud_hostname }} --serverTuning jvm-default --offlineToolsTuning jvm-default --no-prompt --noPropertiesFile'
+  when: not st.stat.exists 
+  
+- name: install init.d
+  environment: "{{ ora_user_env }}"
+  command:  '{{ instance_home }}/OUD/bin/create-rc-script -f /etc/init.d/oud -u {{ oracle_user }}'
+  when: not st.stat.exists 
+  
+- name: register and start up the oud service
+  service: name=oud state=restarted enabled=yes
+  when: not st.stat.exists 
+  
+- name: configure OUD Replication Domain
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command:  '{{ instance_home }}/OUD/bin/dsconfig -h {{ oud_hostname }} -p {{ oud_adminport }} -D "{{ oud_rootUserDN }}" -j /tmp/rootuserpasswordfile -X -n create-replication-domain --provider-name "Multimaster Synchronization" --set base-dn:{{ oud_basedn }} --set replication-server:{{ oud_hostname }}:8989 --set server-id:1 --type generic  --domain-name {{ oud_basedn }}'
+  when: not st.stat.exists 
+ 
+- name: configure OUD Replication Server
+  become_user: "{{ oracle_user }}"
+  environment: "{{ ora_user_env }}"
+  command:  '{{ instance_home }}/OUD/bin/dsconfig -h {{ oud_hostname }} -p {{ oud_adminport }} -D "{{ oud_rootUserDN }}" -j /tmp/rootuserpasswordfile -X -n create-replication-server --provider-name "Multimaster Synchronization" --set replication-port:8989 --set replication-server-id:1 --type generic'
+  when: not st.stat.exists

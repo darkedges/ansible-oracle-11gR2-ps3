@@ -1,0 +1,122 @@
+[ENGINE]
+
+#DO NOT CHANGE THIS.
+Response File Version=1.0.0.0.0
+
+[GENERIC]
+
+#Provide the complete path of the Oracle Home. The Oracle Home directory name may only contain alphanumeric , hyphen (-) , dot (.) and underscore (_) characters, and it must begin with an alphanumeric character.
+ORACLE_HOME={{ iam_home }}
+
+#Provide Database connection string in the format host:port:servicename.
+OIM_DATABASE_CONNECTSTRING={{ db_url_3 }}
+
+#Provide OIM Schema name.
+OIM_SCHEMA_USER_NAME={{ db_prefix }}_OIM
+
+#Provide OIM Schema password.
+OIM_SCHEMA_USER_PASSWORD={{ db_oim_password }}
+
+#Provide MDS Schema name.
+MDS_USER_NAME={{ db_prefix }}_MDS
+
+#Provide MDS Schema password.
+MDS_PASSWORD={{ db_mds_password }}
+
+#Provide MDS Schema Database connection string, if MDS and OIM schemas are loaded on different databases.
+MDS_DATABASE_CONNECTSTRING={{ db_url_3 }}
+
+#Provide true if MDS and OIM schemas are loaded on different databases.
+SELECT_DIFFERENT_DATABASE_FOR_MDS=false
+
+#Provide true if OIM Schema is already encrypted.
+IS_OIM_UPGRADE=false
+
+#Specify WebLogic Administrator User Name.
+WEBLOGIC_ADMINISTRATOR_USERNAME={{ idstore_wls_admin_uid }}
+
+#Specify WebLogic Administrator Password.
+WEBLOGIC_ADMINISTRATOR_PASSWORD={{ idstore_wls_admin_password }}
+
+#Provide WebLogic Admin Server URL of the domain in the format t3://hostname:port.
+WEBLOGIC_ADMIN_SERVER_URL=t3://{{ wls_host }}:{{ wls_host_port }}
+
+#Provide the password for the System Administrator(xelsysadm). Valid Passwords must contain at least 6 characters, must begin with an alphabetic character, and include at least one number, one uppercase letter and one lowercase letter. Password cannot contain firstname, lastname and loginname of OIM.
+OIM_ADMINISTRATOR_PASSWORD={{ idstore_oim_admin_password }}
+
+#Confirm the System Administrator(xelsysadm) password.
+CONFIRM_OIM_ADMINISTRATOR_PASSWORD={{ idstore_oim_admin_password }}
+
+#Provide the HTPP Proxy URL. Format: http(s)://hostname:port
+PROXY_URL_FOR_OIM=http://{{ soa_host }}:{{ soa_host_port }}
+
+#Provide the External Front End URL. Format: http(s)://hostname:port
+EXTERNAL_FRONTEND_URL_FOR_OIM=
+
+#Provide the KeyStore Password. Valid passwords are 6 to 30 characters long, must begin with an alphabetic character, use only alphanumeric, underscore (_), dollar ($), tilde(~), at(@), hyphen(-), plus(+), colon(:), forward slash (/), curly braces({}), square brackets([]), and(&), question mark(?), dot(.), asterisk(*) or pound (#) characters and include at least one number.
+KEYSTORE_PASSWORD={{ oim_keystore_password  }}
+
+#Confirm the KeyStore Password.
+KEYSTORE_CONFIRM_PASSWORD={{ oim_keystore_password  }}
+
+#Provide true to enable LDAP sync. LDAP sync synchronizes Oracle Identity Manager users, roles, role membership and role hierarchy to a LDAP directory. Any direct changes in the directory will be reconciled back to Oracle Identity Manager.
+SELECTION_OPTIONS_PAGE_SYNC_LDAP=true
+
+
+[SYSTEM]
+
+
+[APPLICATIONS]
+
+
+[RELATIONSHIPS]
+
+#
+COMPONENT_OIM_SELECTION_ROOT=false
+
+#Provide true to configure OIM Server.
+OIM_SERVER=true
+
+#Provide true to configure OIM Design Console.
+INSTALL_OIM_DESIGN_CONSOLE=false
+
+#Provide true to configure OIM Remote Manager.
+INSTALL_OIM_REMOTE_MANAGER=false
+
+#
+IS_SERVICE_ID_USED_IN_SPECIFYODSPASSWORDPAGE=false
+
+#Provide LDAP URL in the format ldap://ovd_host:ovd_port.
+LDAP_URL=ldap://{{ idstore_host }}:{{  idstore_listener_port }}
+
+#Provide the user name of LDAP server.
+LDAP_USER_NAME={{ idstore_admin_dn }}
+
+#Provide LDAP server password.
+LDAP_PASSWORD={{ idstore_admin_password }}
+
+#Provide the LDAP Base DN.
+LDAP_BASEDN={{ idstore_searchbase }}
+
+#Provide Directory Server Type.[OVD/OID/IPLANET/ACTIVE_DIRECTORY/OUD]
+DIRECTORY_SERVER_TYPE={{ idstore_directory_type }}
+
+#Provide Directory Server ID.A unique value
+DIRECTORY_SERVER_ID=oud1
+
+#Provide the LDAP Role Container. This is the default container where roles are created in the LDAP directory. You can configure isolation rules in Oracle Identity Manager to create roles in different containers in LDAP.
+LDAP_ROLECONTAINER={{ idstore_searchbase_groups }}
+
+#Provide the LDAP Role Container Description.
+LDAP_ROLECONTAINER_DESCRIPTION=
+
+#Provide the LDAP User Container. This is the default container where users are created in the LDAP directory. You can configure isolation rules in Oracle Identity Manager to create users in different containers in LDAP.
+LDAP_USERCONTAINER={{ idstore_searchbase_user }}
+
+#Provide the LDAP User Container Description.
+LDAP_USERCONTAINER_DESCRIPTION=
+
+#Provide the LDAP User Reservation Container value. LDAP container used for reserving users while waiting for user creation approvals in OIM. Once the user creation is approved, users are moved from reservation container to user container.
+LDAP_USER_RESERVATION_CONTAINER={{ idstore_searchbase_reservation }}
+
+

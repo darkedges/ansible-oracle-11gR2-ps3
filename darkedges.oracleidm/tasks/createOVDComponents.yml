@@ -1,0 +1,26 @@
+---
+
+- debug: msg="Creating OVD Components"
+
+- name: check if IDM Component has been created
+  command: "{{ idm_instance_home }}/bin/opmnctl status ias-component={{ item.component_name }}"
+  with_items: idm.components
+  register: opmnctlStatus
+
+- name: compose the OID Create Component  Password Files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  with_items:
+    - src: "wlsAdminPasswordFile.j2"
+      dest: "/tmp/wlsAdminPasswordFile"
+    - src: "ovdAdminPasswordFile.j2"
+      dest: "/tmp/adminPaswordFile"
+
+- name: Create OVD Component if it does not exists
+  sudo_user: "{{ oracle_user }}"
+  shell: "{{ idm_instance_home }}/bin/opmnctl createcomponent -componentName {{ item.item.component_name }} -componentType {{ item.item.component_type }} -adminPasswordFile /tmp/wlsAdminPasswordFile  -passwordFile /tmp/adminPaswordFile -admin {{ hosts.ovd.admin.uid }} -isAdminSSL true -ovdAdminPort {{ hosts.ovd.components[item.item.component_name].httpadmin }} -namespace {{ hosts.ovd.namespace }} -ldapPort {{ hosts.ovd.components[item.item.component_name].nonssl }} -ldapSport {{ hosts.ovd.components[item.item.component_name].ssl }} -httpPort {{ hosts.ovd.components[item.item.component_name].httpwebgateway }} -isHttpSSL true ; {{ idm_instance_home }}/bin/opmnctl startproc ias-component={{ item.item.component_name }}"
+  with_items: opmnctlStatus.results
+  when: ( {{ item.stdout == "No processes running..." }} )

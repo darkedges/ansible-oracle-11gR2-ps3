@@ -1,0 +1,17 @@
+---
+# defaults file for darkedges.oracleoud
+download_folder: /install/
+oracle_user: oracle
+oracle_group: oinstall
+
+fmw_home: /u01/app/oracle/fmw
+oud_home: "{{ fmw_home }}/Oracle_OUD1"
+jdk_home: "{{ fmw_home }}/jdk7"
+instance_home: "{{ fmw_home }}/asinst_1"
+
+oud_basedn: dc=example,dc=com
+oud_adminport: 4444
+oud_ldapport: 1389
+oud_rootUserDN: cn=Directory Manager
+oud_rootUserPassword: Passw0rd
+oud_hostname: localhost.localdomain

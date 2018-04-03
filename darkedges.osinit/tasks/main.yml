@@ -1,0 +1,14 @@
+---
+
+- name: install 
+  package: name=libselinux-python
+           state=present
+  when: not ansible_distribution == "Solaris"
+
+#- include: createHostsFile.yml
+- include: oracleUserCreation.yml
+
+- include: installRNGD.yml
+  when: not ansible_distribution == "Solaris"
+
+- include: installVagrantPublicKey.yml

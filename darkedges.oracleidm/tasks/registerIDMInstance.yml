@@ -1,0 +1,30 @@
+---
+
+- debug: var=idm
+
+- name: check to see if the instance has been registered
+  sudo_user: "{{ oracle_user }}"
+  shell: "more {{ hostvars[idm.domain.ansible_name].domain_home }}/{{ hostvars[idm.domain.ansible_name].domain_name }}/opmn/topology.xml"
+  register: ODSMTopology
+  delegate_to: "{{ idm.domain.ansible_name }}"
+
+- name: Set Fact to determine if Instance has been registered.
+  set_fact:
+    opmnInstanceRegister: "{{ ( ODSMTopology.stdout.find('ias-instance id=\"' ~ idm_instance ~ '\"') == -1 ) | bool }}"
+
+- name: compose the Register PasswordFile
+  template:
+    src: "{{ idm.version }}/passwordFile.j2"
+    dest: "/tmp/passwordFile"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  when: opmnInstanceRegister
+
+- name: Register OPMN 
+  sudo_user: "{{ oracle_user }}"
+  shell: "{{ idm.config.INSTANCE_HOME }}/bin/opmnctl registerinstance -oracleHome {{ idm.config.ORACLE_HOME }}  -oracleInstance {{ idm.config.INSTANCE_HOME }} -adminHost {{ idm.domain.host }} -adminPort {{ idm.domain.port }} -adminUsername {{ idm.domain.admin.uid }} -adminPasswordFile /tmp/passwordFile"
+  when: opmnInstanceRegister
+
+- name: delete the Register PasswordFile
+  file: path=/tmp/passwordFile state=absent
+  when: opmnInstanceRegister

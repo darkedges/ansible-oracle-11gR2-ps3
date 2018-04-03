@@ -1,0 +1,21 @@
+---
+operation: install
+download_type: local
+download_base_url: http://localhost/iam-artifactory
+download_idm_url:
+  "11.1.1.5.0":
+    url: "{{ download_base_url }}/p12395123_111150_Linux-x86-64.zip"
+    filename: "p12395123_111150_Linux-x86-64.zip"
+    creates: "Disk1/runInstaller"
+    sha256sum: 4a269a1b38ab53bfc3dd467f20f0309774800d83820c4eb51d7a5804b04cc3a1
+
+idm: 
+  version: "11.1.1.5.0"
+  dependantversion: ""
+
+download_folder: /install/installers
+oracle_user: oracle
+oracle_group: oinstall
+
+fmw_home: /u01/app/oracle/fmw
+idm_home: "{{ fmw_home }}/Oracle_IDM1"

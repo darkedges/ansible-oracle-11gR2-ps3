@@ -1,0 +1,4 @@
+---
+dependencies:
+  - { role: darkedges.oraclewls }
+  - { role: darkedges.oraclercu }

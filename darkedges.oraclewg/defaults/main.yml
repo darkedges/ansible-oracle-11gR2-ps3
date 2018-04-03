@@ -1,0 +1,26 @@
+---
+# defaults file for darkedges.jdk7
+download_folder: /install
+oracle_user: oracle
+oracle_group: oinstall
+
+fmw_path: /u01/app/oracle/fmw
+iam_home: "{{ fmw_path }}/Oracle_IAM1"
+wt_home: "{{ fmw_path }}/Oracle_WT1"
+wg_home: "{{ fmw_path }}/Oracle_OAMWebGate1"
+jdk_home: "{{ fmw_path }}/jdk7"
+
+wt_instance: instance1
+wt_instance_home: "/u01/app/oracle/shared/instances/{{ wt_instance }}"
+
+weblogic_admin_uid: weblogic
+weblogic_admin_password: Passw0rd
+
+ohs_vh_auth_port: 7777
+ohs_vh_auth_fqdn: "{{ hostvars['application'].ansible_fqdn }}"
+
+
+oam_admin_host: localhost.localdomain
+oam_admin_port: 7001
+
+

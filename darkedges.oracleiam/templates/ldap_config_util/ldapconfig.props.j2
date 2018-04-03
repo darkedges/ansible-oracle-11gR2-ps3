@@ -1,0 +1,44 @@
+# OIMServer Type, Valid values can be WLS, JBOSS, WAS
+# e.g.: OIMServerType=WLS
+OIMServerType=WLS
+
+# OIM Provider URL
+# if OIMServerType is WAS then
+#    OIMProviderURL=corbaloc:iiop:OIMServerBootStrapHost:OIMServerBootStrapPort
+#    hint:look for the OIM server bootStrapPort number in WAS admin console
+#    e.g.: corbaloc:iiop:hostName:2809
+# else OIMServerType is WLS then
+#      OIMProviderURL=t3://localhost:ManagedServerPort
+#      e.g.: OIMProviderURL=t3://localhost:14000
+OIMProviderURL=t3://{{ oim_wls_host }}:{{ oim_host_port }}
+
+# LDAP/OVD Server URL
+# If OVD server is selected during OIM installation, then provide
+# value for LDAPURL.
+# LDAPURL=ldap://<OVD server>:<OVD Port>
+# e.g.: LDAPURL=ldap://OVDserver.us.oracle.com:6501
+#
+# If not, leave LDAPURL empty
+# e.g.: LDAPURL=
+LDAPURL=
+
+# If OVD server is selected during OIM installation, then provide
+# Admin user name to connect to LDAP/OVD Server
+# e.g.: LDAPAdminUsername=cn=oimAdminUser,cn=systemids,dc=us,dc=oracle,dc=com
+#
+# If not, leave LDAPAdminUsername empty
+# e.g.: LDAPAdminUsername=
+LDAPAdminUsername={{ idstore_oim_ldap_dn }}
+
+# If OVD server is NOT selected during OIM installation, then provide
+# LIBOVD_PATH_PARAM=
+# e.g.: LIBOVD_PATH_PARAM=/scratch/suramesh/Oracle/Middleware/user_projects/domains/base_domain/config/fmwconfig/ovd/oim
+LIBOVD_PATH_PARAM={{ domain_location }}/config/fmwconfig/ovd/oim
+
+
+# This is for FA C9, MT scenario where last changenumber from the standby
+# server is to be updated to the incremental recon. jobs, to be picked up,
+# once the primary/secondary replicated server comes up.
+# If the change number is not passed through this parameter, then logic is to
+# query the OVD and retrieve the same.
+ChangeLogNumber=

@@ -1,0 +1,21 @@
+---
+# defaults file for darkedges.jdk7
+download_folder: /install
+
+fmw_path: /u01/app/oracle/fmw
+jdk_home: "{{ fmw_path }}/jdk7"
+
+oracle_user: oracle
+oracle_group: oinstall
+
+wls_version: 1036
+wls_admin_uid: weblogic
+wls_admin_passwrd: Passw0rd
+wls_admin_port: 7001
+wls_admin_server: localhost.localdomain
+wls_domain: prov_domain
+wls_domain_dir: "/u01/app/oracle/shared/domains/{{ wls_domain }}"
+wl_home: "{{ fmw_path }}/wlserver_10.3"
+nodemanager_port: 5556
+nodemanager_port_type: ssl 
+nodemanager_host: localhost.localdomain

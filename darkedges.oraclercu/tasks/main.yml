@@ -1,0 +1,24 @@
+--- 
+
+- name: install R1 pre-requisites
+  package: name=glibc.i686
+  when: ( {{ oracle_rcu_installer.find("11.1.1.5.0") != -1 }} ) and ( not ansible_distribution == "Solaris" )
+
+- name: check if RCU has been unzip
+  stat: path={{ rcu_home }}
+  register: st
+
+- name: unzip installer  
+  become_user: "{{ oracle_user }}"
+  unarchive: src={{ item }} dest={{ base_home }}  copy=no
+  with_items:
+     - "{{ rcu_download_folder }}/{{ oracle_rcu_installer }}"
+  when: not st.stat.exists
+
+- name: rename rcuHome directory
+  command: "mv {{ base_home }}/rcuHome {{ rcu_home }}"
+  when: not st.stat.exists
+    
+# - name: IAM RCU Include
+#   include: rcuCreate-IAM.yml
+#   when: not st.stat.exists

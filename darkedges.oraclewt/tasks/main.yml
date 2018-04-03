@@ -1,0 +1,11 @@
+--- 
+# - name: check if Web Tier has been installed
+#   stat: path={{ wt_home }}
+#   register: st
+  
+# - name: Install WebTier
+#   include: installWebTier.yml
+#   when: not st.stat.exists
+  
+- name: Configure WebTier
+  include: configureWebTier.yml

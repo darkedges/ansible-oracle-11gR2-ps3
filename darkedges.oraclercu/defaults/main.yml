@@ -1,0 +1,32 @@
+---
+# defaults file for darkedges.oraclercu
+download_folder: /install/zips
+oracle_rcu_installer: V75907-01.zip
+oracle_user: oracle
+oracle_group: oinstall
+
+base_home: /u01/app/oracle
+rcu_home: "{{ base_home }}/rcu"
+
+# Defaults for RCU
+oracle_database_hostname: localhost.localdomain
+oracle_database_port: 1521
+oracle_database_servicename: orcl.vagrant.vm
+oracle_database_syspassword: Passw0rd
+oracle_database_oidpassword: Passw0rd
+oracle_database_odssmpassword: Passw0rd
+oracle_database_mdspassword: Passw0rd
+oracle_database_opsspassword: Passw0rd
+oracle_database_oimpassword: Passw0rd
+oracle_database_oampassword: Passw0rd
+oracle_database_soainfrapassword: Passw0rd
+oracle_database_orasdpmpassword: Passw0rd
+oracle_database_iaupassword: Passw0rd
+oracle_database_iauappendpassword: Passw0rd
+oracle_database_iauviewerpassword: Passw0rd
+oracle_database_biplatformpassword: Passw0rd
+oracle_database_omsmpassword: Passw0rd
+
+oracle_database_rcu_components: "-component OIM -component MDS -component OPSS -component SOAINFRA -component ORASDPM -component IAU -component OAM -component BIPLATFORM -component OMSM"
+
+

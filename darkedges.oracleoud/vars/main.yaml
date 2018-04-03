@@ -1,0 +1,5 @@
+---
+
+# shell environment for the oracle user
+ora_user_env:
+  JAVA_HOME: "{{ jdk_home }}"

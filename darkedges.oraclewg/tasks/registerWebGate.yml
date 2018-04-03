@@ -1,0 +1,33 @@
+---
+
+- name: uncompress RREG Client
+  unarchive: src="{{ iam_home }}/oam/server/rreg/client/RREG.tar.gz" dest="{{ iam_home }}/oam/server/rreg/client/" copy="no" owner="{{ oracle_user }}" group="{{ oracle_group }}" creates="{{ iam_home }}/oam/server/rreg/client/rreg/bin/oamreg.sh"
+
+- name: change ownership
+  file: path="{{ iam_home }}/oam/server/rreg/client/" state="directory" owner="{{ oracle_user }}" group="{{ oracle_group }}" recurse="yes"
+  
+- name: compose the webgate registration settings
+  template:
+    src: wg/web-01_webgate.xml.j2
+    dest: "/tmp/web-01_webgate.xml"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: Register WebGate
+  become_user: "{{ oracle_user }}"
+  shell: "(echo {{ weblogic_admin_uid }}; echo {{ weblogic_admin_password }}; echo n;echo n;) | sh ./bin/oamreg.sh  inband /tmp/web-01_webgate.xml -noprompt" 
+  environment:
+    OAM_REG_HOME: "{{ iam_home }}/oam/server/rreg/client/"
+    JAVA_HOME: "{{ jdk_home }}"
+  args:
+    chdir: "{{ iam_home }}/oam/server/rreg"
+
+- name: Deploying WebGate configuration to ohs
+  become_user: "{{ oracle_user }}"
+  shell: "cp -rf {{ iam_home }}/oam/server/rreg/output/web-01_webgate/* {{ wt_instance_home }}/config/OHS/ohs1/webgate/config/" 
+
+- name: Start managed oam_server1
+  include: startOAMManagedServer.yml     
+
+- name: Restart WebTier
+  include: restartWebTier.yml 

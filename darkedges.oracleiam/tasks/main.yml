@@ -1,0 +1,59 @@
+---
+
+- name: check if IAM has been deployed
+  stat: path={{ iam_home }}
+  register: st
+
+- name: create FMW directory
+  become_user: "{{ oracle_user }}"
+  file: dest={{ fmw_home }} state=directory
+  when: not st.stat.exists
+  
+- name: compose the oracle automated installer settings
+  template:
+    src: iam_installSoftwareOnly.rsp.j2
+    dest: "/tmp/iam_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: create central inventory
+  command: "{{ download_folder }}/iam/Disk1/stage/Response/createCentralInventory.sh {{ fmw_home }}/oraInventory {{ oracle_group }}"
+  when: not st.stat.exists
+
+- name: install IAM
+  become_user: "{{ oracle_user }}"
+  command: "{{ download_folder }}/iam/Disk1/runInstaller -silent -force -ignoreSysPrereqs -waitforcompletion -jreLoc {{ jdk_home }} -responseFile /tmp/iam_install.rsp"
+  ignore_errors: yes
+  when: not st.stat.exists  
+  
+- name: check if SOA has been deployed
+  stat: path={{ soa_home }}
+  register: st
+
+- name: compose the oracle automated installer settings
+  template:
+    src: soa_installSoftwareOnly.rsp.j2
+    dest: "/tmp/soa_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: install SOA
+  become_user: "{{ oracle_user }}"
+  command: "{{ download_folder }}/soa/Disk1/runInstaller -silent -force -ignoreSysPrereqs -waitforcompletion -jreLoc {{ jdk_home }} -responseFile /tmp/soa_install.rsp"
+  ignore_errors: yes
+  when: not st.stat.exists  
+  
+- name: Include IdentityStore Configuration 
+  include: configureIdentityStore.yml
+
+- name: Include Domain Configuration 
+  include: configureDomain.yml
+  
+- name: Init NodeManager
+  include: configureNodeManager.yml
+  
+- name: Init OIM
+  include: initOIM.yml
+
+  - name: Configure iptables
+    include: iptables.yml  

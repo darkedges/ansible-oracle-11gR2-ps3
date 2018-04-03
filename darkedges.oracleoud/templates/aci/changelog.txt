@@ -1,0 +1,1 @@
+set-access-control-handler-prop --add global-aci:"(target="ldap:///cn=changelog")(targetattr="*")(version 3.0; acl "External changelog access"; allow(read,search,compare,add,write,delete,export) groupdn="ldap:///cn=OIMAdministrators,cn=groups,dc=example,dc=com";)"

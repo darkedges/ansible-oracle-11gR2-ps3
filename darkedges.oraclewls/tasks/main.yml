@@ -1,0 +1,46 @@
+--- 
+- name: check if Weblogic has been installed
+  stat: path={{ fmw_path }}/wlserver_10.3
+  register: st
+ 
+- name: compose the weblogic automated installer settings
+  template:
+    src: wls_silent.xml.j2
+    dest: "/tmp/wls_silent.xml"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  when: not st.stat.exists
+  
+- name: "deploy weblogic {{ wls_version }}"
+  become_user: "{{ oracle_user }}"
+  command: "{{ jdk_home }}/bin/java -D64 -jar {{ download_folder }}/wls{{ wls_version }}_generic.jar -mode=silent -silent_xml=/tmp/wls_silent.xml"
+  when: not st.stat.exists
+
+- name: Assures "/home/{{ oracle_user }}/bin" exists
+  file: path="/home/{{ oracle_user }}/bin" state=directory owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  when: not st.stat.exists
+  
+- name: Assures "/home/{{ oracle_user }}/bin/wlst" exists
+  file: path="/home/{{ oracle_user }}/bin/wlst" state=directory owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  when: not st.stat.exists
+
+- name: Copy Management Scripts
+  copy: src=bin/wlst/ dest=/home/{{ oracle_user }}/bin/wlst/ owner="{{ oracle_user }}" group="{{ oracle_group }}" mode=0644
+  when: not st.stat.exists
+
+- name: compose theWebLogic Management Scripts
+  template: src="{{ item.src }}" dest="{{ item.dest }}" owner="{{ oracle_user }}" group="{{ oracle_group }}" mode={{ item.mode }}
+  with_items:
+     - { src: 'bin/nodemanager.sh.j2', dest: '/home/{{ oracle_user }}/bin/nodemanager.sh', mode: '0755'}
+     - { src: 'bin/adminserver.sh.j2', dest: '/home/{{ oracle_user }}/bin/adminserver.sh', mode: '0755'}
+     - { src: 'bin/managedservers.sh.j2', dest: '/home/{{ oracle_user }}/bin/managedservers.sh', mode: '0755'}
+     - { src: 'bin/wlst/variables.py.j2', dest: '/home/{{ oracle_user }}/bin/wlst/variables.py', mode: '0644'}
+  when: not st.stat.exists
+  
+- name: compose the nodemanager init.d script
+  template: src=init.d/nodemanager_init.j2 dest=/etc/init.d/nodemanager mode=0755
+  when: not st.stat.exists
+  
+- name: register the nodemanager service
+  service: name=nodemanager state=stopped enabled=yes
+  when: not st.stat.exists

@@ -1,0 +1,47 @@
+##########################
+#OAMconfigPropertyFile
+##########################
+WLSHOST: {{ wls_host }}
+WLSPORT: {{ wls_host_port }}
+WLSADMIN: {{ idstore_wls_admin_uid }}
+WLSPASSWD: {{ idstore_wls_admin_password }}
+IDSTORE_HOST: {{ idstore_host }}
+IDSTORE_PORT: {{ idstore_listener_port }}
+IDSTORE_BINDDN: {{ idstore_admin_dn }}
+IDSTORE_PASSWD: {{ idstore_admin_password }}
+IDSTORE_USERNAMEATTRIBUTE: uid 
+IDSTORE_LOGINATTRIBUTE: uid
+IDSTORE_USERSEARCHBASE: {{ idstore_searchbase_user }}
+IDSTORE_SEARCHBASE: {{ idstore_searchbase }}
+IDSTORE_SYSTEMIDBASE: {{ idstore_searchbase_systemids }}
+IDSTORE_GROUPSEARCHBASE: {{ idstore_searchbase_groups }}
+IDSTORE_OAMSOFTWAREUSER: {{ idstore_oam_ldap_uid }}
+IDSTORE_PWD_OAMSOFTWAREUSER: {{ idstore_oam_ldap_password }}
+IDSTORE_OAMADMINUSER: {{ idstore_oam_admin_uid }}
+IDSTORE_PWD_OAMADMINUSER: {{ idstore_oam_admin_password }}
+IDSTORE_DIRECTORYTYPE: {{ idstore_directory_type }}
+POLICYSTORE_SHARES_IDSTORE: true
+#Can't use hypens in PRIMARY_OAM_SERVERS so ip address used as workaround (bug 14823453)
+PRIMARY_OAM_SERVERS: {{oam_host }}:{{oam_host_port}}
+WEBGATE_TYPE: ohsWebgate11g 
+ACCESS_GATE_ID: DCCWebgate
+OAM11G_IDM_DOMAIN_OHS_HOST: {{ ohs_host }}
+OAM11G_IDM_DOMAIN_OHS_PORT: {{ ohs_host_port }}
+OAM11G_IDM_DOMAIN_OHS_PROTOCOL: http
+OAM11G_WG_DENY_ON_NOT_PROTECTED: true
+OAM11G_IMPERSONATION_FLAG: true
+OAM_TRANSFER_MODE: simple
+OAM11G_OAM_SERVER_TRANSFER_MODE: simple 
+OAM11G_IDM_DOMAIN_LOGOUT_URLS: /console/jsp/common/logout.jsp,/em/targetauth/emaslogout.jsp,/oamsso/logout.html,/cgi-bin/logout.pl
+OAM11G_SERVER_LOGIN_ATTRIBUTE: uid 
+COOKIE_DOMAIN: {{ oam_cookie_domain }}
+OAM11G_IDSTORE_ROLE_SECURITY_ADMIN: {{ oam11g_idstore_role_security_admin }}
+OAM11G_SSO_ONLY_FLAG: false
+OAM11G_OIM_INTEGRATION_REQ: true
+OAM11G_SERVER_LBR_HOST: {{ ohs_host }}
+OAM11G_SERVER_LBR_PORT: {{ ohs_host_port }}
+OAM11G_SERVER_LBR_PROTOCOL: http
+COOKIE_EXPIRY_INTERVAL: 120
+OAM11G_OIM_OHS_URL: http://{{ ohs_host }}:{{ ohs_host_port }}/
+OAM11G_OIM_WEBGATE_PASSWD: {{ oam_oim_webgate_password }}
+SPLIT_DOMAIN: true

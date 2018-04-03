@@ -1,0 +1,23 @@
+#
+
+wls_uid = '{{ domain.admin.user }}';
+wls_password = '{{ domain.admin.password }}';
+wls_adminServerPort = '{{ domain.http.port }}';
+wls_adminServer = '{{ idm.config.DOMAIN_HOST_NAME }}';
+wls_domain ='{{ domain_name}}';
+wls_domainDir = '{{ domain_home }}/{{ domain_name }}';
+wls_nm_home = '{{ fmw_home }}/wlserver_10.3/common/nodemanager';
+wls_nm_listenPort = '5556';
+wls_nm_listenPortType = 'ssl';
+wls_nm_hostname = '{{ idm.config.DOMAIN_HOST_NAME }}';
+print 'Using the following variables'
+print 'wls_uid                  '+wls_uid
+print 'wls_password             '+wls_password
+print 'wls_adminServerPort      '+wls_adminServerPort
+print 'wls_adminServer          '+wls_adminServer
+print 'wls_domain               '+wls_domain
+print 'wls_domainDir            '+wls_domainDir
+print 'wls_nm_home              '+wls_nm_home
+print 'wls_nm_listenPort        '+wls_nm_listenPort
+print 'wls_nm_listenPortType    '+wls_nm_listenPortType
+print 'wls_nm_hostname          '+wls_nm_hostname

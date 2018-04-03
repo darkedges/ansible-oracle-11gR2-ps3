@@ -1,0 +1,111 @@
+#!/bin/bash
+
+# based on http://ruleoftech.com/2013/weblogic-server-auto-restart-with-node-manager-as-linux-service
+
+PROCESS_STRING="^.*{{ fmw_path }}/.*weblogic.NodeManager.*"
+
+source {{ wl_home }}/server/bin/setWLSEnv.sh > /dev/null
+export NodeManagerHome="{{ wl_home }}/common/nodemanager"
+NodeManagerLockFile="$NodeManagerHome/nodemanager.log.lck"
+
+PROGRAM="{{ wl_home }}/server/bin/startNodeManager.sh"
+SERVICE_NAME=`/bin/basename $0`
+LOCKFILE="/var/lock/subsys/$SERVICE_NAME"
+
+RETVAL=0
+
+waitForNodeManagerStop() {
+        waiting=1
+        wait_time=900
+        start_time=`date +%s`
+        while [ $waiting -eq 1 ]
+        do
+                result=`netstat -an | grep 5556 | grep LISTEN | wc -l`
+                if [ ${result} -eq 0 ]; then
+                        waiting=0
+                fi
+                current_time=`date +%s`
+                interval=`expr ${current_time} - ${start_time}`;
+                if [ ${interval} -gt ${wait_time} ]; then
+                        waiting=0;
+                        echo "ABORTED"
+                        echo Timed out waiting for NodeManager to stop. Please investigate
+                        exit -1;
+                fi
+        done
+}
+
+
+waitForNodeManagerStart() {
+        waiting=1
+        wait_time=900
+        start_time=`date +%s`
+        while [ $waiting -eq 1 ]
+        do
+                result=`netstat -an | grep 5556 | grep LISTEN | wc -l`
+                if [ ${result} -gt 0 ]; then
+                        waiting=0
+                fi
+                current_time=`date +%s`
+                interval=`expr ${current_time} - ${start_time}`;
+                if [ ${interval} -gt ${wait_time} ]; then
+                        waiting=0;
+                        echo "ABORTED"
+                        echo Timed out waiting for NodeManager to start. Please investigate
+                        exit -1;
+                fi
+        done
+}
+
+startNodeManager() {
+        OLDPID=`/usr/bin/pgrep -f $PROCESS_STRING`
+        if [ ! -z "$OLDPID" ]; then
+                echo "$SERVICE_NAME is already running (pid $OLDPID) !"
+                exit
+        fi
+        echo -n $"Starting $SERVICE_NAME: "
+        nohup $PROGRAM 2>&1 > $NodeManagerHome/nodemanager.log &
+        RETVAL=$?
+}
+
+stopNodeManager() {
+        echo $"Stopping $SERVICE_NAME: "
+        OLDPID=`/usr/bin/pgrep -f $PROCESS_STRING`
+        if [ "$OLDPID" != "" ]; then
+            /bin/kill -TERM $OLDPID
+        else
+            /bin/echo "$SERVICE_NAME is stopped"
+        fi
+        /bin/rm -f $NodeManagerLockFile
+}
+
+case "$1" in
+        'start')
+                startNodeManager
+                waitForNodeManagerStart
+        ;;
+        'stop')
+                stopNodeManager
+        ;;
+        'restart')
+                stopNodeManager
+                waitForNodeManagerStop
+                startNodeManager
+                waitForNodeManagerStart
+        ;;
+        'status')
+                OLDPID=`/usr/bin/pgrep -f $PROCESS_STRING`
+                if [ "$OLDPID" != "" ]; then
+                        echo "$SERVICE_NAME is running (pid: $OLDPID)"
+                else
+                        echo "$SERVICE_NAME is stopped"
+                fi
+                RETVAL=$?
+        ;;
+        *)
+        echo "Usage: $0 start|stop|restart|status"
+        exit 1
+        ;;
+esac
+
+exit $RETVAL

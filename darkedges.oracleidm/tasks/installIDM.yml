@@ -1,0 +1,52 @@
+---
+
+- include: basicPackages.yml
+
+- name: create FMW directory
+  sudo_user: "{{ oracle_user }}"
+  file: dest={{ fmw_home }} state=directory
+
+- name: Create download folder
+  file: path="{{ download_folder }}/idm/{{ idm.version }}" state=directory mode=0755 owner="{{ oracle_user }}" group="{{ oracle_group }}"
+  when: download_type=="http"
+
+- name: Download IDM files
+  sudo_user: "{{ oracle_user }}"
+  get_url: url="{{ item.url }}" dest="{{ download_folder }}/idm/{{ idm.version }}/{{ item.filename }}" mode=0755 validate_certs=no sha256sum="{{ item.sha256sum }}"
+  with_items:
+    - "{{ download_idm_url[idm.version] }}"
+  when: download_type=="http"
+
+- name: unarchive IDM files
+  sudo_user: "{{ oracle_user }}"
+  unarchive: src="{{ download_folder }}/idm/{{idm.version}}/{{ item.filename }}" dest="{{ download_folder }}/idm/{{idm.version}}" mode=0755 creates="{{ download_folder }}/idm/{{idm.version}}/{{ item.creates }}" copy=no
+  with_items:
+    - "{{ download_idm_url[idm.version] }}"
+  when: download_type=="http"
+
+- name: need to update the lib/env_asha.mk to work on RedHat 6+
+  copy: src="{{idm.version}}/Disk2/stage/Components/oracle.ha/11.1.1.2.0/1/DataFiles/filegroup2.jar" dest="{{ download_folder }}/idm/{{idm.version}}/Disk2/stage/Components/oracle.ha/11.1.1.2.0/1/DataFiles/filegroup2.jar" owner="{{ oracle_user }}" group="{{ oracle_group }}" mode=0644
+  when: ( {{ ( ( ansible_distribution == 'CentOS' and ansible_distribution_version | version_compare("6", ">=") ) or ( ansible_distribution == 'Red Hat Enterprise Linux' and ansible_lsb.major_release| version_compare("6", ">=") ) ) and  idm.version  == '11.1.1.2.0'  }} | bool ) 
+
+- name: compose the oracle automated installer settings
+  template:
+    src: "{{ idm.version }}/idm_installSoftwareOnly.rsp.j2"
+    dest: "/tmp/idm_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: Create Central Inventory
+#  sudo_user: "{{ oracle_user }}"  #This script must be executed as root
+  script: createCentralInventory.sh ~oracle/oracleInventory oinstall creates=~oracle/oracleInventory
+
+- name: to have ~oracle/oracleInventory owned by oracle
+  file:
+    path: "/home/{{ oracle_user }}/oracleInventory"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    state: directory
+    recurse: yes
+
+- name: install IDM
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ download_folder }}/idm/{{idm.version}}/Disk1/runInstaller -silent -force -ignoreSysPrereqs -waitforcompletion -responseFile /tmp/idm_install.rsp"

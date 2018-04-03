@@ -1,0 +1,33 @@
+---
+oracle_tmp: /install/AllInOne/installers
+oracle_user: oracle
+# hashed password for the oracle user
+# python -c 'import crypt; print crypt.crypt("oracle", "$1$salt$")'
+oracle_pass: $1$salt$6hY7SFGTovD5BRJ.4zYAd1
+
+
+oracle_group: oinstall
+oracle_dba_group: dba
+oracle_path: /u01/app/oracle/db
+oracle_inventory: /u01/app/oracle/oraInventory
+oracle_db_name: orcl
+oracle_db_home: dbhome
+oracle_db_basename: "{{ oracle_path }}/oracle/product/11.2.0/{{ oracle_db_home }}"
+oracle_db_mem_percent: 20
+oracle_db_syspass: Passw0rd
+oracle_db_systempass: Passw0rd
+dbca_db_snmp_password: Passw0rd
+dbca_asm_snmp_password: Passw0rd
+db_listener_port: 1521
+oracle_host_name: vagrant.vm
+oracle_db_mem_total: "{{ ( ansible_memtotal_mb|int * 10 ) // 25 }}"
+dbca_em_configuration: NONE
+dbca_storage_type: FS
+dbca_database_type: MULTIPURPOSE
+dbca_character_set: AL32UTF8
+dbca_national_character_set: UTF8
+dbca_asm_diskgroup: DATA
+dbca_sample_schema: TRUE
+dbca_operation_type: createDatabase
+dbca_data_file_destination: "{{ ora_user_env.ORACLE_BASE }}/oradata"
+dbca_init_params: open_cursors=800,processes=500

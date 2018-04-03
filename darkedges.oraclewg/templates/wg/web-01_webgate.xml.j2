@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+ Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved. 
+
+   NAME: OAM11GRequest_short.xml - Template for OAM 11G Agent Registration Request file
+	 (Shorter version - Only mandatory values - Default values will be used for all other fields)
+   DESCRIPTION: Modify with specific values and pass file as input to the tool.
+
+-->
+<OAM11GRegRequest>
+
+    <serverAddress>http://{{ oam_admin_host }}:{{ oam_admin_port }}</serverAddress>
+    <hostIdentifier>SERVER_NAME</hostIdentifier>
+    <agentName>web-01_webgate</agentName>
+    <security>open</security>
+	<logOutUrls>
+            <url>/oamsso/logout.html</url>
+            <url>/console/jsp/common/logout.jsp</url>
+            <url>/em/targetauth/emaslogout.jsp</url>
+            <url>/oamsso/logout.html</url>
+            <url>/cgi-bin/logout.pl</url>
+	</logOutUrls>
+    <protectedResourcesList> 
+	<resource>/**</resource>
+    </protectedResourcesList>
+    <publicResourcesList> 
+	<resource></resource>
+    </publicResourcesList>	
+    <excludedResourcesList>
+        <resource></resource>
+    </excludedResourcesList>
+
+</OAM11GRegRequest>
+

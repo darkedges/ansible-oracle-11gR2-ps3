@@ -1,0 +1,28 @@
+--- 
+
+- name: install x86 oracle dependencies
+  yum: name={{ item }} state=present
+  with_items:
+    - unzip 
+    - libselinux-python 
+    - compat-libcap1 
+    - compat-libstdc++-33 
+    - libaio-devel 
+    - ksh 
+    - redhat-lsb-core 
+    - elfutils-libelf-devel 
+    - gcc
+    - gcc-c++
+
+- name: compose the oracle automated installer settings
+  template:
+    src: wt_installSoftwareOnly.rsp.j2
+    dest: "/tmp/wt_install.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    
+- name: install WebTier
+  become_user: "{{ oracle_user }}"
+  command: "{{ download_folder }}/wt/Disk1/runInstaller -silent -force -ignoreSysPrereqs -waitforcompletion -responseFile /tmp/wt_install.rsp"
+  ignore_errors: yes
+  when: not st.stat.exists  

@@ -1,0 +1,38 @@
+---
+
+- name: compose the Static Ports ini file
+  template:
+    src: "{{ idm.version }}/staticports.ini.j2"
+    dest: "/tmp/staticports.ini"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: compose the IDM Configuration Response File
+  template:
+    src: "{{ idm.version }}/idm_configureSoftwareOnly.rsp.j2"
+    dest: "/tmp/idm_configure.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+
+- name: Check to see if the nodemanager service exists
+  stat: path=/etc/init.d/nodemanager 
+  register: nodemanager_service
+
+- name: Stop the NodeManager if it has exists and running
+  service: name=nodemanager state=stopped
+  when: nodemanager_service.stat.exists
+
+- name: configure IDM
+  sudo_user: "{{ oracle_user }}"
+  command: "{{ idm_home }}/bin/config.sh -silent -force -ignoreSysPrereqs -waitforcompletion -responseFile /tmp/idm_configure.rsp"
+  register: configureIDMOutput
+
+- include: updateNodeManager.yml
+  when: ( idm.config.CREATE_NEW_DOMAIN is defined )
+
+- include: updateWeblogic.yml
+  when: ( idm.config.CREATE_NEW_DOMAIN is defined )
+
+- include: updateAdmin.yml
+  when: (idm_config_IS_MASTER ) and ( idm.config.CREATE_NEW_DOMAIN is defined )
+

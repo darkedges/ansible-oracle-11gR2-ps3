@@ -1,0 +1,25 @@
+---
+
+- name: Check if OAM Managed Server is running
+  become_user: "{{ oracle_user }}"
+  shell: "~{{ oracle_user }}/bin/managedservers.sh -c status -n oam_server1"
+  register: oamgrep
+  
+- name: Check if the nodemanager is running
+  become_user: "{{ oracle_user }}"
+  shell: "/home/oracle/bin/nodemanager.sh status"
+  when: oamgrep is defined and oamgrep.stdout.find('Server oam_server1 is :\u001b[1;31mSHUTDOWN\u001b[0m') != -1
+  register: nodemanagergrep
+  
+- name: Start the NodeManager
+  service: name=nodemanager state=restarted
+  when: nodemanagergrep is defined and nodemanagergrep.stdout.find('nodemanager.sh is stopped') != -1
+  
+- name: Wait for the NodeManager service to start
+  wait_for: port="{{ nodemanager_port }}" delay=10
+  when: nodemanagergrep is defined and  nodemanagergrep.stdout.find('nodemanager.sh is stopped') != -1
+  
+- name: Start the OAM Managed Server
+  become_user: "{{ oracle_user }}"
+  command: "~{{ oracle_user }}/bin/managedservers.sh -c start -n oam_server1"
+  when: oamgrep is defined and oamgrep.stdout.find('Server oam_server1 is :\u001b[1;31mSHUTDOWN\u001b[0m') != -1

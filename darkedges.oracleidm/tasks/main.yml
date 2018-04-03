@@ -1,0 +1,33 @@
+---
+
+- name: check if OPatch has been deployed
+  stat: path="{{ idm_home }}/OPatch/opatch"
+  register: opatchInstalled
+
+- name: check if Dependant IDM Version has been deployed
+  sudo_user: "{{ oracle_user }}"
+  command: "./opatch lsinventory -oh {{ idm_home }}"
+  args:
+    chdir: "{{ idm_home }}/OPatch/"
+  register: idmPatchVersion
+  when: opatchInstalled.stat.exists
+
+- name: check if the Instance has been deployed
+  stat: path="{{ idm.config.INSTANCE_HOME }}"
+  register: instanceInstalled
+  when: ( operation == "configure" )
+
+- include: installIDM.yml
+  when: ( operation == "install" ) and ( (not opatchInstalled.stat.exists) or ( ( idmPatchVersion is defined ) and ( idmPatchVersion.stdout.find("{{ idm.version }}") == -1 ) ) ) 
+
+- include: configureIDM.yml
+  when: ( operation == "configure" ) and ( ( idmPatchVersion is defined ) and ( idmPatchVersion.stdout.find("{{ idm.version }}") >= 0 ) ) and ( not instanceInstalled.stat.exists )
+
+- include: registerIDMInstance.yml
+  when: ( operation == "register" ) and ( ( idmPatchVersion is defined ) and ( idmPatchVersion.stdout.find("{{ idm.version }}") >= 0 ) )
+
+- include: createOVDComponents.yml
+  when: ( operation == "createComponents" ) and ( ( inventory_hostname in groups['ovd'] ) and ( idmPatchVersion is defined ) and ( idmPatchVersion.stdout.find("{{ idm.version }}") >= 0 ) )
+
+- include: configureOVD.yml
+  when: ( operation == "configureOVD" ) and ( ( idmPatchVersion is defined ) and ( idmPatchVersion.stdout.find("{{ idm.version }}") >= 0 ) )

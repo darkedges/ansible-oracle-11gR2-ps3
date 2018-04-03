@@ -1,0 +1,93 @@
+#!/usr/bin/python
+import os, sys
+
+execfile('/tmp/domain/utils.py')
+ 
+ADMIN_SERVER='AdminServer'
+ADMIN_SERVER_PORT={{wls_host_port}}
+DOMAIN_HOME='{{domain_location}}'
+DOMAIN='{{domain}}'
+LISTEN_ADDRESS='{{wls_host}}'
+
+MACHINE_PROV='{{wls_host}}'
+
+NODE_MANAGER='{{idstore_wls_admin_uid}}'
+NODE_MANAGER_LISTEN_ADDRESS_PROV='{{wls_host}}'
+NODE_MANAGER_PASSWORD='{{idstore_wls_admin_password}}'
+NODE_MANAGER_PORT={{nodemanager_port}}
+
+ADMIN_USER='{{idstore_wls_admin_uid}}'
+WEBLOGIC_PASSWORD='{{idstore_wls_admin_password}}'
+
+REPOS_DBURL='{{db_url_2}}'
+
+###############################################################################
+# Create the domain
+###############################################################################
+readTemplate('{{fmw_home}}/wlserver_10.3/common/templates/domains/wls.jar')
+cd('/Security/base_domain/User/weblogic')
+cmo.setPassword(WEBLOGIC_PASSWORD)
+writeDomain(DOMAIN_HOME)
+closeTemplate()
+
+###############################################################################
+# Open the domain for editing
+###############################################################################
+ 
+readDomain(DOMAIN_HOME)
+
+###############################################################################
+# Extend the domain with OIM
+###############################################################################
+addTemplate('{{iam_home}}/common/templates/applications/oracle.oim_11.1.2.0.0_template.jar')
+
+###############################################################################
+# Extend the domain with OAM
+###############################################################################
+addTemplate('{{iam_home}}/common/templates/applications/oracle.oam_ds_mobile_11.1.2.3_template.jar')
+
+###############################################################################
+# Update DataSources
+###############################################################################
+changeDatasource('ApplicationDB', 		'{{db_prefix}}_OIM', 		'{{db_oim_password}}', 		REPOS_DBURL)
+changeDatasource('EDNDataSource', 		'{{db_prefix}}_SOAINFRA', 	'{{db_soainfra_password}}', 	REPOS_DBURL)
+changeDatasource('EDNLocalTxDataSource', 	'{{db_prefix}}_SOAINFRA', 	'{{db_soainfra_password}}', 	REPOS_DBURL)
+changeDatasource('OraSDPMDataSource', 		'{{db_prefix}}_ORASDPM', 	'{{db_orasdpm_password}}',	REPOS_DBURL)
+changeDatasource('SOADataSource', 		'{{db_prefix}}_SOAINFRA', 	'{{db_soainfra_password}}', 	REPOS_DBURL)
+changeDatasource('SOALocalTxDataSource', 	'{{db_prefix}}_SOAINFRA',	'{{db_soainfra_password}}', 	REPOS_DBURL)
+changeDatasource('bip_datasource',      	'{{db_prefix}}_BIPLATFORM', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('mds-oam', 			'{{db_prefix}}_MDS', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('mds-oim', 			'{{db_prefix}}_MDS', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('mds-owsm', 			'{{db_prefix}}_MDS', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('mds-soa', 			'{{db_prefix}}_MDS', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('oamDS', 			'{{db_prefix}}_OAM', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('oimJMSStoreDS', 		'{{db_prefix}}_OIM', 		'{{db_oim_password}}', 		REPOS_DBURL)
+changeDatasource('oimOperationsDB', 		'{{db_prefix}}_OIM', 		'{{db_oim_password}}', 		REPOS_DBURL)
+changeDatasource('omsm-ds', 			'{{db_prefix}}_OMSM', 		'{{db_mds_password}}', 		REPOS_DBURL)
+changeDatasource('opss-DBDS', 			'{{db_prefix}}_OPSS', 		'{{db_opss_password}}',		REPOS_DBURL)
+changeDatasource('soaOIMLookupDB', 		'{{db_prefix}}_OIM', 		'{{db_oim_password}}', 		REPOS_DBURL)
+
+###############################################################################
+# Create Boot Properties
+###############################################################################
+createBootPropertiesFile('{{domain_location}}/servers/AdminServer/security','boot.properties',ADMIN_USER,WEBLOGIC_PASSWORD)
+createBootPropertiesFile('{{domain_location}}/servers/oim_server1/security','boot.properties',ADMIN_USER,WEBLOGIC_PASSWORD)
+createBootPropertiesFile('{{domain_location}}/servers/soa_server1/security','boot.properties',ADMIN_USER,WEBLOGIC_PASSWORD)
+createBootPropertiesFile('{{domain_location}}/servers/oam_server1/security','boot.properties',ADMIN_USER,WEBLOGIC_PASSWORD)
+
+###############################################################################
+# Misc domain settings
+###############################################################################
+ 
+cd ('/')
+cmo.setInternalAppsDeployOnDemandEnabled(false) 
+cmo.setProductionModeEnabled(True)
+cmo.setConfigBackupEnabled(True)
+cmo.setArchiveConfigurationCount(25)
+
+###############################################################################
+# Update, Close and Exit
+###############################################################################
+updateDomain()
+closeDomain()
+exit()

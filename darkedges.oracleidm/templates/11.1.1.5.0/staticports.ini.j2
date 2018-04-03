@@ -1,0 +1,94 @@
+#######################################################################################
+#This file is a template file for staticports.ini
+#This file must be edited to provide the ports which required to be set
+#Those ports which are not provided explicitly in this file will be assigned automatically
+#Note:  Please keep in mind to uncomment the rows of the port numbers of your choice in order 
+#to use that port. 
+#######################################################################################
+
+
+########################Begin section for Domain ################################
+#This port number is not required if you are using a extend existing domain scenario
+######################################################################################
+
+[DOMAIN]
+
+#This port indicates the Domain port number
+{% if idm.domain is undefined %}#{% endif %}Domain Port No = {{ idm.domain.ports.nonssl if ( (idm.domain is defined) and (idm.domain.ports is defined) ) else '7001' }}
+{% if idm.domain is undefined %}#{% endif %}Node Manager Port No = {{ idm.domain.ports.nodemanager if ( (idm.domain is defined) and (idm.domain.ports is defined) ) else '5556' }}
+
+########################Begin section for ovd1 ################################
+#This port numbers will be considered only if OVD is selected for configuration
+#######################################################################################
+
+[OVD]
+
+#The HTTP Admin port for OVD
+{% if idm.ovd is undefined %}#{% endif %}Oracle Virtual Directory Port No for HTTP Admin = {{ idm.ovd.ports.httpadmin if idm.ovd is defined else '8899' }}
+
+#The SSL LDAP port for OVD
+{% if idm.ovd is undefined %}#{% endif %}Oracle Virtual Directory (SSL) Port No for LDAP = {{ idm.ovd.ports.ssl if idm.ovd is defined else '6502' }}
+
+#The Non-SSL LDAP port for OVD
+{% if idm.ovd is undefined %}#{% endif %}Oracle Virtual Directory (Non-SSL) Port No for LDAP = {{ idm.ovd.ports.nonssl if idm.ovd is defined else '6501' }}
+
+#The HTTP Web Gateway port for OVD
+{% if idm.ovd is undefined %}#{% endif %}Oracle Virtual Directory Port No for HTTP Web Gateway = {{ idm.ovd.ports.httpwebgateway if idm.ovd is defined else '2223' }}
+
+
+########################Begin section for oid1 ################################
+#This port numbers will be considered only if OID is selected for configuration
+#######################################################################################
+
+[OID]
+
+#The Non-SSL port for OID
+{% if idm.oid is undefined %}#{% endif %}Oracle Internet Directory Port No = {{ idm.oid.ports.nonssl if idm.oid is defined else '3060' }}
+
+#The SSL port for OID
+{% if idm.oid is undefined %}#{% endif %}Oracle Internet Directory (SSL) Port No = {{ idm.oid.ports.ssl if idm.oid is defined else '3061' }}
+
+
+########################Begin section for emAgent ################################
+#This port numbers will be considered only if EM is selected for configuration
+#######################################################################################
+
+[EMAGENT]
+
+#The port for EM Agent port
+{% if idm.em is undefined %}#{% endif %}Oracle EM Agent Port No = {{ idm.em.ports.nonssl if idm.em is defined else '5162' }}
+
+########################Begin section for oif ################################
+#This port numbers will be considered only if OIF is selected for configuration
+#######################################################################################
+
+[OIF]
+
+#The port for OIF Server port
+#OIF Server Port No = 7499
+
+########################Begin section for ods ################################
+#This port numbers will be considered if ODSM or DIP or both are selected for configuration
+#######################################################################################
+
+[ODS]
+
+#The port for ODSM Server port
+{% if idm.odsm is undefined %}#{% endif %}ODS Server Port No = {{ idm.odsm.ports.nonssl if idm.odsm is defined else '7006' }}
+
+########################Begin section for ohs1 ################################
+#This port numbers will be considered only if OHS is selected for configuration
+#######################################################################################
+
+[OHS]
+
+#The Proxy Port For OHS
+#Oracle Http Server Proxy Port No = 7015
+
+#The Listen Port For OHS
+#Oracle Http Server Administrator Port No = 7016
+
+
+#The SSL Port For OHS
+#Oracle Http Server SSL Port No = 7017
+

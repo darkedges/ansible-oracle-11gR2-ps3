@@ -1,0 +1,15 @@
+--- 
+- name: check if Web Gate has been installed
+  stat: path={{ wg_home }}
+  register: st
+  
+# - name: Install WebGate
+#   include: installWebGate.yml
+#   when: not st.stat.exists
+  
+- name: Configure WebGate
+  include: configureWebGate.yml
+#  when: not st.stat.exists
+
+- name: register WebGate
+  include: registerWebgate.yml 

@@ -1,0 +1,11 @@
+execfile('/home/{{ oracle_user }}/bin/wlst/variables.py')
+connect(wls_uid,wls_password,'t3://{{ oim_wls_host }}:{{ oim_wls_port }}');
+serverConfig()
+
+###############################################################################
+# Update Role
+###############################################################################
+cd('/SecurityConfiguration/{{ domain }}/Realms/myrealm/RoleMappers/XACMLRoleMapper')
+cmo.setRoleExpression('','Admin','Grp(wlsadmingroup)|Grp(Administrators)')
+
+exit()

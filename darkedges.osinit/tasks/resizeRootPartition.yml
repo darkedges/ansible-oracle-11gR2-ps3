@@ -1,0 +1,6 @@
+---
+
+- name: Resize Disk
+  script: resizeDisk.sh
+
+     

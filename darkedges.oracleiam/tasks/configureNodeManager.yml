@@ -1,0 +1,36 @@
+---
+
+- name: Check if nodemanager.properties has been updated
+  shell: "grep -e 'StartScriptEnabled=true' -e 'StopScriptEnabled=true' {{ wl_home }}/common/nodemanager/nodemanager.properties | wc -l"
+  register: grep
+
+- name: Start the NodeManager
+  service: name=nodemanager state=started
+  when: grep.stdout.find('0') != -1
+  
+- name: Wait for the NodeManager service to start
+  wait_for: port="{{ nodemanager_port }}" delay=10
+  when: grep.stdout.find('0') != -1
+  
+- name: Stop the NodeManager
+  service: name=nodemanager state=stopped
+  when: grep.stdout.find('0') != -1
+
+- name: Wait for the NodeManager service to stop
+  wait_for: port="{{ nodemanager_port }}" delay=10 state=stopped 
+  when: grep.stdout.find('0') != -1
+  
+- name: Configure NodeManager Properties
+  lineinfile: dest="{{ wl_home }}/common/nodemanager/nodemanager.properties" state=present line="{{ item }}" 
+  with_items:
+     - "StartScriptEnabled=true"
+     - "StopScriptEnabled=true"
+  when: grep.stdout.find('0') != -1
+  
+- name: Start the NodeManager
+  service: name=nodemanager state=started
+  when: grep.stdout.find('0') != -1
+  
+- name: Wait for the NodeManager service to start
+  wait_for: port="{{ nodemanager_port }}" delay=10 state=started 
+  when: grep.stdout.find('0') != -1
